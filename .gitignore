@@ -1,3 +1,16 @@
 /node_modules
 variables.ts
 .env
+.env.local
+
+# build
+dist/
+build/
+
+# logs
+*.log
+
+# sistema / IDE
+.DS_Store
+Thumbs.db
+.idea/
