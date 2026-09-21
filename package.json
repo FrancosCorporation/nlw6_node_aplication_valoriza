@@ -1,9 +1,10 @@
 {
   "name": "Nlw6_Valoriza",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/server.ts",
   "license": "MIT",
   "scripts": {
+    "start": "ts-node-dev src/server.ts",
     "dev": "ts-node-dev src/server.ts",
     "typeorm": "ts-node-dev ./node_modules/typeorm/cli.js"
   },
@@ -26,5 +27,7 @@
     "@types/jsonwebtoken": "^8.5.2",
     "@types/uuid": "^8.3.0",
     "ts-node-dev": "^1.1.6"
-  }
+  },
+  "description": "Projeto de estudo Node/TypeScript da NLW 6 (Valoriza)",
+  "author": "Rodolfo Franco (FrancosCorporation)"
 }
