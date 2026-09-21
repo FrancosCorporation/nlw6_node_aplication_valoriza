@@ -1,5 +1,24 @@
 # nlw6_node_aplication_valoriza
 
+## 🐳 Instalação e Execução (Docker) — recomendado
+
+### Pré-requisitos
+- [Docker](https://docs.docker.com/get-docker/) + Docker Compose
+
+### Rodar com Docker
+```bash
+docker compose up --build
+```
+
+
+### Sem Docker (local)
+```bash
+npm install
+npm start
+```
+Servicos necessarios (local): sqlite
+
+
 **Projeto de estudo** — API REST "Valoriza" (cadastro de usuários, tags e elogios) desenvolvida durante a Next Level Week 6 da Rocketseat, trilha Node.js, em junho de 2021.
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-4-3178C6?style=flat&logo=typescript&logoColor=white)
