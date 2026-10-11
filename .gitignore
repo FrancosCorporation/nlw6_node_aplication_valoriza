@@ -2,6 +2,14 @@
 variables.ts
 .env
 .env.local
+.env.*
+!.env.example
+
+# banco local e dados persistidos
+database/
+*.sqlite
+*.sqlite-*
+*.db
 
 # build
 dist/

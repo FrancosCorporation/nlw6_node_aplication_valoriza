@@ -1,55 +1,44 @@
-*--  Package.json --*
+# Passo a passo de desenvolvimento
 
-yarn init -y
+## Requisitos
 
-*--  Add typescript developer --*
+- Node.js 22 ou superior
+- npm
+- Docker e Docker Compose para execução em contêiner
 
-yarn add typescript -d 
+## Configuração local
 
-*--  Add tsconfig.json --*
+1. Instale as dependências:
 
-yarn tsc --init
+   ```bash
+   npm ci
+   ```
 
-*--  Add express for server listen --*
+2. Copie `.env.example` para `.env` e defina `JWT_SECRET` com pelo menos 32 bytes aleatórios. Um valor pode ser gerado com:
 
-yarn add express  
+   ```bash
+   openssl rand -hex 32
+   ```
 
-*--  Add @types/express for server listen --*
+3. Compile e inicie a aplicação:
 
-yarn add @types/express  
+   ```bash
+   npm run build
+   npm start
+   ```
 
-*--  Create Migration --*
+   Para desenvolver com reinicialização ao salvar arquivos, use `npm run dev`.
 
-yarn typeorm migration:create -n
+O TypeORM aplica migrations pendentes ao iniciar. O banco local é criado em `database/app.sqlite` e fica fora do Git.
 
-*--  Add script auto run with yarn dev --*
+## Primeiro administrador
 
-yarn add ts-node-dev -D
+Configure temporariamente `ADMIN_NAME`, `ADMIN_EMAIL` e `ADMIN_PASSWORD` no `.env`; a senha deve ter no mínimo 12 caracteres. Depois do build, rode `npm run admin:create`. Esse comando cria uma conta administrativa nova e não promove contas existentes. Apague as variáveis `ADMIN_*` após o bootstrap.
 
-*-- install sql lite BD  --*
+## Docker Compose
 
-yarn add typeorm reflect-metadata sqlite3
+Configure `JWT_SECRET` no `.env`, crie o administrador opcional com `docker compose --profile admin run --rm admin` e inicie a API com `docker compose up --build`. O volume `valoriza_database` persiste os dados entre reinicializações.
 
-*-- Add types for uuid --*
+## Rotas
 
-yarn add @types/uuid -D
-
-*-- library async errors --*
-
-yarn add express-async-errors
-
-*-- library encript --*
-
-yarn add bcryptjs
-
-yarn add @types/bcryptjs -D
-
-*-- library jwtoken --*
-
-yarn add jsonwebtoken
-
-yarn add @types/jsonwebtoken
-
-*-- library dotEnv --*
-
-yarn add dotenv
+Consulte a tabela de métodos, rotas e autenticação no [README](README.md#recursos). A API fica disponível em `http://localhost:3000`; `GET /health` indica quando o banco foi inicializado.

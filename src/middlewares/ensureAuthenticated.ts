@@ -1,26 +1,29 @@
 import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
+import { appConfig } from "../config/env";
 
-interface IPayLoad {
-    sub: string;
-}
+export function ensureAuthenticated(
+  request: Request,
+  response: Response,
+  next: NextFunction
+) {
+  const authorization = request.header("authorization");
+  const match = authorization?.match(/^Bearer\s+(\S+)$/i);
 
-export function ensureAuthenticated(request: Request, response: Response, next: NextFunction) {
+  if (!match) {
+    return response.status(401).json({ error: "Unauthorized" });
+  }
 
-    const token = request.headers.authorization;
-
-    if (!token) {
-        return response.status(401).end();
+  try {
+    const payload = verify(match[1], appConfig.jwtSecret, {
+      algorithms: ["HS256"],
+    });
+    if (typeof payload === "string" || typeof payload.sub !== "string") {
+      return response.status(401).json({ error: "Unauthorized" });
     }
-    try {
-        const { sub } = verify(token.replace('Bearer ', ''), process.env.NODE_TOKEN_HASH || '') as IPayLoad;
-
-        request.user_id = sub;
-
-        return next();
-
-    }
-    catch (err) {
-        return response.status(401).end();
-    }
+    request.user_id = payload.sub;
+    return next();
+  } catch {
+    return response.status(401).json({ error: "Unauthorized" });
+  }
 }

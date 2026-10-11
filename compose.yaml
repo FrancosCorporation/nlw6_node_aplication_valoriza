@@ -1,0 +1,26 @@
+services:
+  api:
+    build: .
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no arquivo .env}
+      PORT: ${PORT:-3000}
+    volumes:
+      - valoriza_database:/app/database
+    restart: unless-stopped
+
+  admin:
+    profiles: ["admin"]
+    build: .
+    command: ["node", "dist/scripts/createAdmin.js"]
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no arquivo .env}
+      ADMIN_NAME: ${ADMIN_NAME:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    volumes:
+      - valoriza_database:/app/database
+
+volumes:
+  valoriza_database:

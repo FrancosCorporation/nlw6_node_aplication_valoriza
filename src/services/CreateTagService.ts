@@ -1,25 +1,26 @@
-import { getCustomRepository } from "typeorm";
-import { TagsRepositories } from "../repositories/TagsRepositories";
+import { AppDataSource } from "../database";
+import { AppError } from "../errors/AppError";
+import { Tag } from "../entities/Tag";
 
 class CreateTagService {
   async execute(name: string) {
-    const tagsRepositories = getCustomRepository(TagsRepositories);
+    const tagsRepositories = AppDataSource.getRepository(Tag);
+    const normalizedName = typeof name === "string" ? name.trim() : "";
 
-    if (!name) {
-      throw new Error("Incorrect name!");
+    if (!normalizedName) {
+      throw new AppError("Nome da tag é obrigatório.");
     }
 
-    // SELECT * FROM TAGS WHERE NAME = 'name'
     const tagAlreadyExists = await tagsRepositories.findOne({
-      name,
+      where: { name: normalizedName },
     });
 
     if (tagAlreadyExists) {
-      throw new Error("Tag already exists!");
+      throw new AppError("Essa tag já existe.", 409);
     }
 
     const tag = tagsRepositories.create({
-      name,
+      name: normalizedName,
     });
 
     await tagsRepositories.save(tag);

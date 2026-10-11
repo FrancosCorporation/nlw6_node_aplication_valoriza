@@ -1,14 +1,14 @@
-import { getCustomRepository } from "typeorm";
-import { TagsRepositories } from "../repositories/TagsRepositories";
-import { classToPlain } from "class-transformer";
+import { instanceToPlain } from "class-transformer";
+import { AppDataSource } from "../database";
+import { Tag } from "../entities/Tag";
 
 class ListTagsService {
   async execute() {
-    const tagsRepositories = getCustomRepository(TagsRepositories);
+    const tagsRepositories = AppDataSource.getRepository(Tag);
 
     const tags = await tagsRepositories.find();
 
-    return classToPlain(tags);
+    return instanceToPlain(tags);
   }
 }
 

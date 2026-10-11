@@ -4,4 +4,9 @@ dist
 build
 *.log
 .env
+.env.*
+database/
+*.sqlite
+*.sqlite-*
+*.db
 npm-debug.log*

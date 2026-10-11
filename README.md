@@ -1,116 +1,87 @@
-# nlw6_node_aplication_valoriza
+# Valoriza API
 
-## 🐳 Instalação e Execução (Docker) — recomendado
+API REST de estudo para cadastro de usuários, tags e envio de elogios, criada durante a Next Level Week 6 da Rocketseat.
 
-### Pré-requisitos
-- [Docker](https://docs.docker.com/get-docker/) + Docker Compose
+## Recursos
 
-### Rodar com Docker
+- Cadastro com senha hasheada e e-mail normalizado.
+- Login com token JWT assinado por segredo obrigatório do ambiente.
+- Criação de tags restrita a administradores.
+- Listagem de tags, usuários (somente nome e ID) e elogios do próprio usuário.
+- Banco SQLite local, com migrations aplicadas na inicialização.
+- Endpoint público de saúde em `GET /health`.
+
+| Método e rota | Acesso | Descrição |
+| --- | --- | --- |
+| `POST /users` | Público | Cria conta comum; o campo `admin` do corpo é ignorado. |
+| `POST /login` | Público | Retorna um token Bearer. |
+| `GET /health` | Público | Informa se a API está pronta. |
+| `GET /users` | Autenticado | Lista IDs e nomes para selecionar destinatários. |
+| `GET /tags` | Autenticado | Lista tags disponíveis. |
+| `POST /tags` | Administrador | Cria uma tag. |
+| `POST /compliments` | Autenticado | Envia um elogio para outro usuário. |
+| `GET /users/compliments/send` | Autenticado | Lista elogios enviados pela conta autenticada. |
+| `GET /users/compliments/receive` | Autenticado | Lista elogios recebidos pela conta autenticada. |
+
+As rotas autenticadas recebem `Authorization: Bearer <token>`. Usuários comuns recebem `403` ao tentar criar tags; token ausente, inválido ou associado a uma conta removida recebe `401`.
+
+## Execução local
+
+Requisitos: Node.js 22 ou superior e npm. O contêiner usa Node.js 24 LTS.
+
 ```bash
-docker compose up --build
+npm ci
+cp .env.example .env
 ```
 
+Gere um segredo JWT forte e preencha `JWT_SECRET` em `.env`:
 
-### Sem Docker (local)
 ```bash
-npm install
+openssl rand -hex 32
+```
+
+Compile e inicie a API:
+
+```bash
+npm run build
 npm start
 ```
-Servicos necessarios (local): sqlite
 
+Durante o desenvolvimento, use `npm run dev`. A aplicação valida o segredo e a porta antes de iniciar. O banco local fica em `database/app.sqlite`; as migrations são aplicadas automaticamente. Esse arquivo é ignorado pelo Git e tem acesso restrito no ambiente Linux.
 
-**Projeto de estudo** — API REST "Valoriza" (cadastro de usuários, tags e elogios) desenvolvida durante a Next Level Week 6 da Rocketseat, trilha Node.js, em junho de 2021.
+### Criar o primeiro administrador
 
-![TypeScript](https://img.shields.io/badge/TypeScript-4-3178C6?style=flat&logo=typescript&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=flat&logo=node.js&logoColor=white)
-![Licença](https://img.shields.io/badge/licen%C3%A7a-MIT-green)
-![Status](https://img.shields.io/badge/status-projeto%20de%20estudo-blue)
-
-## Sobre
-
-Back-end de estudo que aplica autenticação JWT, criptografia de senha com bcrypt e persistência SQLite via TypeORM. Usuários autenticados e administradores podem criar tags; usuários autenticados podem enviar elogios uns aos outros. Projetado como exercício de arquitetura em camadas (controllers → services → repositories → entities).
-
-## Funcionalidades
-
-Comprovadas pelo código:
-
-- `POST /users` — cria usuário com validação de e-mail único e senha hasheada com bcrypt (`src/services/CreateUserService.ts`);
-- `POST /login` — autentica e devolve token JWT com validade de 1 dia (`src/services/AuthenticateUserService.ts`);
-- `POST /tags` — protegida por `ensureAuthenticated` + `ensureAdmin`; valida nome obrigatório e único (`src/routes.ts`, `src/middlewares/`);
-- `POST /compliments` — protegida por `ensureAuthenticated`; impede autoelogio e valida se o destinatário existe (`src/services/CreateComplimentService.ts`);
-- Entidades e migrations para `users`, `tags` e `compliments` em SQLite (`src/entities/`, `src/database/migrations/`);
-- Serialização com `class-transformer` ocultando a senha (`@Exclude`) e expondo um campo customizado (`src/entities/User.ts`);
-- Tratamento centralizado de erros com `express-async-errors` (`src/server.ts`).
-
-**Incompleto (honestidade do estudo):** os controllers/services de listagem (tags, usuários, elogios enviados/recebidos) existem, mas **não estão registrados em `src/routes.ts`**; `src/services/ListComplementByUser.ts` está vazio.
-
-### Regras de negócio do evento (checklist original preservado)
-
-- Cadastro de usuário
-  - [x] Não é permitido cadastrar mais de um usuário com o mesmo e-mail
-  - [x] Não é permitido cadastrar usuário sem e-mail
-- Cadastro de tag
-  - [x] Não é permitido cadastrar tag sem nome
-  - [x] Não é permitido cadastrar mais de uma tag com o mesmo nome
-  - [x] Não é permitido o cadastro por usuários que não sejam administradores
-- Cadastro de elogios
-  - [x] Não é permitido um usuário cadastrar um elogio para si
-  - [x] Não é permitido cadastrar elogios para usuários inválidos
-  - [x] O usuário precisa estar autenticado na aplicação
-
-## Stack
-
-- **Node.js + Express 4** com **TypeScript**
-- **TypeORM 0.2** + **SQLite** (`sqlite3`)
-- **jsonwebtoken** (autenticação) e **bcryptjs** (hash de senha)
-- **class-transformer**, **express-async-errors**, **dotenv**
-- **ts-node-dev** para desenvolvimento
-
-## Como rodar
-
-Requer configuração de ambiente: o projeto usa `dotenv`, e o middleware de autenticação lê `process.env.NODE_TOKEN_HASH` (`src/middlewares/ensureAuthenticated.ts`).
+Defina temporariamente `ADMIN_NAME`, `ADMIN_EMAIL` e `ADMIN_PASSWORD` no `.env`. A senha precisa ter ao menos 12 caracteres. Depois do build, execute:
 
 ```bash
-yarn install
+npm run admin:create
 ```
 
-1. Crie um arquivo `.env` na raiz com a variável usada na verificação do token:
+O comando cria uma nova conta administrativa e não promove contas existentes. Remova as três variáveis administrativas do `.env` depois do uso. O cadastro público sempre cria contas comuns.
 
-```env
-NODE_TOKEN_HASH=sua_chave_secreta
-```
-
-2. Rode as migrations e suba o servidor:
+## Docker Compose
 
 ```bash
-yarn typeorm migration:run
-yarn dev
+cp .env.example .env
+# Preencha JWT_SECRET e, para o bootstrap, ADMIN_NAME, ADMIN_EMAIL e ADMIN_PASSWORD.
+docker compose --profile admin run --rm admin
+# Remova as variáveis ADMIN_* do .env e suba a API:
+docker compose up --build -d
 ```
 
-A API sobe em `http://localhost:3000` (porta definida em `src/server.ts`). O banco SQLite fica em `src/database/databse.sqlite` (arquivo versionado com dados de teste).
+O Compose persiste o SQLite em um volume, publica a porta configurada em `PORT` e executa o contêiner sem root. Para verificar a API, acesse `http://localhost:3000/health` (ou a porta definida no `.env`).
 
-## Estrutura do projeto
+## Segurança
 
-```
-.
-├── ormconfig.json
-├── Step-Step.md              # anotações com os comandos do evento
-└── src/
-    ├── @types/express/       # extensão de tipos (user_id no Request)
-    ├── controllers/          # camada HTTP
-    ├── database/             # conexão + migrations + arquivo SQLite
-    ├── entities/             # User, Tag, Compliments
-    ├── middlewares/          # ensureAuthenticated, ensureAdmin
-    ├── repositories/         # repositórios TypeORM
-    ├── services/             # regras de negócio
-    ├── routes.ts
-    └── server.ts
+Veja [SECURITY.md](SECURITY.md) para configuração de segredos, proteção do banco e reporte privado de vulnerabilidades. O arquivo SQLite foi retirado da versão atual do repositório; um commit antigo ainda o contém no histórico Git.
+
+## Desenvolvimento
+
+```bash
+npm run build
 ```
 
-## Observações
-
-- O segredo usado para **assinar** o token em `src/services/AuthenticateUserService.ts` está fixo no código; apenas a **verificação** usa `NODE_TOKEN_HASH`. Em um projeto real o segredo deveria vir só do ambiente — fica registrado como lição aprendida.
-- O arquivo versionado `src/database/databse.sqlite` contém dados de teste (nome com erro de digitação mantido como no original).
+Não há suíte automatizada de testes neste repositório.
 
 ## Licença
 

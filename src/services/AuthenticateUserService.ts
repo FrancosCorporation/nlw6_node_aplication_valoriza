@@ -1,8 +1,10 @@
-import { getCustomRepository } from "typeorm";
 import { compare } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 
-import { UsersRepositories } from "../repositories/UsersRepositories";
+import { AppDataSource } from "../database";
+import { appConfig } from "../config/env";
+import { AppError } from "../errors/AppError";
+import { User } from "../entities/User";
 
 interface IAuthenticateRequest {
   email: string;
@@ -11,33 +13,28 @@ interface IAuthenticateRequest {
 
 class AuthenticateUserService {
   async execute({ email, password }: IAuthenticateRequest) {
-    const usersRepositories = getCustomRepository(UsersRepositories);
+    const usersRepository = AppDataSource.getRepository(User);
 
-    // Verificar se email existe
-    const user = await usersRepositories.findOne({
-      email,
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    const user = await usersRepository.findOne({
+      where: { email: normalizedEmail },
     });
 
-    if (!user) {
-      throw new Error("Email/Password incorrect");
-    }
-
-    // verificar se senha está correta
-
-    // 123456 / 783645734-sdhfhsdf7762374234234
-    const passwordMatch = await compare(password, user.password);
+    const passwordMatch = user && typeof password === "string"
+      ? await compare(password, user.password)
+      : false;
 
     if (!passwordMatch) {
-      throw new Error("Email/Password incorrect");
+      throw new AppError("Email ou senha inválidos.", 401);
     }
 
-    // Gerar token
     const token = sign(
       {
         email: user.email,
       },
-      "4f93ac9d10cb751b8c9c646bc9dbccb9",
+      appConfig.jwtSecret,
       {
+        algorithm: "HS256",
         subject: user.id,
         expiresIn: "1d",
       }

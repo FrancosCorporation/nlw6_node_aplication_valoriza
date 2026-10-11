@@ -1,19 +1,19 @@
-import { getCustomRepository } from "typeorm";
-import { ComplimentsRepositories } from "../repositories/ComplimentsRepositories";
+import { AppDataSource } from "../database";
+import { Compliments } from "../entities/Compliments";
+import { presentCompliment } from "../presenters/ComplimentPresenter";
 
 class ListUserSendComplimentsService {
   async execute(user_id: string) {
-    const complimentsRepositories = getCustomRepository(
-      ComplimentsRepositories
-    );
+    const complimentsRepository = AppDataSource.getRepository(Compliments);
 
-    const compliments = await complimentsRepositories.find({
+    const compliments = await complimentsRepository.find({
       where: {
         user_sender: user_id,
       },
+      relations: { userSender: true, userReceiver: true, tag: true },
     });
 
-    return compliments;
+    return compliments.map(presentCompliment);
   }
 }
 

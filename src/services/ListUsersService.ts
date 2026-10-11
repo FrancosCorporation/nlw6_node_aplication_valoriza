@@ -1,14 +1,13 @@
-import { getCustomRepository } from "typeorm";
-import { UsersRepositories } from "../repositories/UsersRepositories";
-import { classToPlain } from "class-transformer";
+import { AppDataSource } from "../database";
+import { User } from "../entities/User";
 
 class ListUserService {
   async execute() {
-    const usersRepositories = getCustomRepository(UsersRepositories);
-
-    const users = await usersRepositories.find();
-
-    return classToPlain(users);
+    const users = await AppDataSource.getRepository(User).find({
+      select: { id: true, name: true },
+      order: { name: "ASC" },
+    });
+    return users.map(({ id, name }) => ({ id, name }));
   }
 }
 
