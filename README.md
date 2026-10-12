@@ -25,6 +25,8 @@ API REST de estudo para cadastro de usuários, tags e envio de elogios, criada d
 
 As rotas autenticadas recebem `Authorization: Bearer <token>`. Usuários comuns recebem `403` ao tentar criar tags; token ausente, inválido ou associado a uma conta removida recebe `401`.
 
+O login bloqueia após 10 tentativas malsucedidas por IP em 15 minutos; cadastros públicos têm limite de 30 por IP por hora. As contagens usam memória do processo. Se publicar atrás de proxy reverso, configure apenas os proxies confiáveis; para várias réplicas, use um armazenamento compartilhado de limites.
+
 ## Execução local
 
 Requisitos: Node.js 22 ou superior e npm. O contêiner usa Node.js 24 LTS.

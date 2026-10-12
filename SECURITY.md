@@ -7,6 +7,7 @@
 - O cadastro público não pode atribuir privilégios administrativos. Use `npm run admin:create` apenas para criar uma conta nova e remova as variáveis `ADMIN_*` depois.
 - O SQLite é salvo em `database/app.sqlite`, ignorado pelo Git e pelo Docker build. Em Linux, a aplicação restringe permissões locais e o contêiner roda como usuário não-root.
 - Rotacionar `JWT_SECRET` invalida os tokens já emitidos.
+- `POST /login` limita tentativas malsucedidas a 10 por IP em 15 minutos; `POST /users` limita cadastros a 30 por IP por hora. O contador é local ao processo. Em proxy reverso ou múltiplas réplicas, configure o IP confiável e um store compartilhado de forma compatível com a infraestrutura.
 
 ## Histórico do repositório
 
