@@ -16,7 +16,7 @@ Atualizado em 2026-10-12. Stack: Express 5, TypeORM 0.3, SQLite, JWT e bcryptjs.
 | IMP-01 | P2 | Concluído | Rotas de listagem registradas, autenticadas e limitadas aos dados necessários do usuário. |
 | SEC-02 | P1 | Concluído | Dependências diretas atualizadas; `npm audit` sem vulnerabilidades reportadas. |
 | SEC-03 | P1 | Concluído | Login e cadastro público limitados por IP para reduzir brute force e abuso de criação de contas. |
-| DEVOPS-03 | P1 | Em validação | CI somente estática compila e audita Node 22/24, cobrindo o mínimo declarado pelo pacote. |
+| DEVOPS-03 | P1 | Concluído | CI estática `38197516916` passou em Node 22/24: `npm ci`, audit alto e compilação TypeScript. |
 | TEST-01 | P2 | Pendente | Esta versão não inclui uma suíte automatizada de testes. |
 
 ## Verificações estáticas
@@ -27,6 +27,8 @@ npm audit --audit-level=high
 docker compose config --quiet
 git diff --check
 ```
+
+CI `38197516916` passou nos jobs Node 22 e 24 com `npm ci`, audit e build. Não há testes no workflow.
 
 Os testes de endpoint, inicialização do navegador/contêiner e integração não foram executados neste ciclo.
 
